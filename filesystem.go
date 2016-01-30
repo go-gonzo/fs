@@ -39,6 +39,8 @@ func Read(path string) (gonzo.File, error) {
 //TODO: ADD support for prefix to avoid all the util.Trims
 func Src(ctx context.Context, globs ...string) gonzo.Pipe {
 
+	ctx, cancel := context.WithCancel(ctx)
+
 	files := make(chan gonzo.File)
 	pipe := gonzo.NewPipe(ctx, files)
 
@@ -64,7 +66,16 @@ func Src(ctx context.Context, globs ...string) gonzo.Pipe {
 
 			file, err = Read(mp.Name)
 			ctx = context.WithValue(ctx, "file", name)
+
+			if err == ErrIsDir {
+				ctx.Warn("fs.Src Ignored Directory.")
+				continue;
+
+			}
+
+
 			if err != nil {
+				cancel();
 				ctx.Error(err)
 				return
 			}
@@ -72,6 +83,7 @@ func Src(ctx context.Context, globs ...string) gonzo.Pipe {
 			file.FileInfo().SetBase(base)
 			file.FileInfo().SetName(name)
 			files <- file
+
 		}
 
 	}()
