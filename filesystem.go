@@ -1,4 +1,4 @@
-//Package filesystem provides filesystem based Stages for Slurp.
+//Package fs provides filesystem based Stages for Gonzo.
 package fs
 
 import (
@@ -9,13 +9,14 @@ import (
 	"path/filepath"
 
 	"github.com/go-gonzo/fs/glob"
-	"github.com/omeid/gonzo/context"
 	"github.com/omeid/gonzo"
+	"github.com/omeid/gonzo/context"
 )
 
-var ErrIsDir = errors.New("path is a directory.")
+// ErrIsDir is returned when a Directory is based where a file is expected.
+var ErrIsDir = errors.New("path is a directory")
 
-// A simple helper function that opens the file from the given path and
+// Read is a simple helper function that opens the file from the given path and
 // returns a pointer to a gonzo.File or an error.
 func Read(path string) (gonzo.File, error) {
 	Stat, err := os.Stat(path)
@@ -69,13 +70,12 @@ func Src(ctx context.Context, globs ...string) gonzo.Pipe {
 
 			if err == ErrIsDir {
 				ctx.Warn("fs.Src Ignored Directory.")
-				continue;
+				continue
 
 			}
 
-
 			if err != nil {
-				cancel();
+				cancel()
 				ctx.Error(err)
 				return
 			}
